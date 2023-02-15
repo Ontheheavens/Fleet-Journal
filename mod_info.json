@@ -1,0 +1,18 @@
+{
+	"id":"fleet_journal",
+	"name":"Fleet Journal",
+	"author":"Ontheheavens",
+	"version":"1.0.0",
+	"description":"UI for creating custom intel entries.",
+	"gameVersion":"0.95.1a-RC6",
+	"jars":["jars/fleet_journal.jar"],
+	"modPlugin":"fleetjour.FleetJourModPlugin",
+	"totalConversion": "false",
+	"utility": "false",
+    	"dependencies": [
+        	{
+            	"id": "lw_lazylib",
+           	"name": "LazyLib",
+      	  	}
+    	]
+}
