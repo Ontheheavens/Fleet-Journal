@@ -1,4 +1,4 @@
-![Title](https://raw.githubusercontent.com/Ontheheavens/Fleet-Journal/main/images/Title.png)
+![Title](https://raw.githubusercontent.com/Ontheheavens/Fleet-Journal/main/images/Title%20Image.png)
 
 Fleet Journal is a campaign-layer mod for game Starsector. It adds writing of custom notes as a gameplay feature.
 
