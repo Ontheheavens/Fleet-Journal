@@ -47,4 +47,7 @@ class EntryManagerPlugin(val ui: IntelUIAPI) : CustomUIPanelPlugin {
         }
     }
 
+    override fun buttonPressed(buttonId: Any?) {
+    }
+
 }

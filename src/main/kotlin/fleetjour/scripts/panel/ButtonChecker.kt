@@ -78,7 +78,6 @@ object ButtonChecker {
 
     private fun checkAddButton(parent: EntryWriter, buttonId: Any) {
         val assembly = parent.assembly
-        val draftParagraphs = parent.draftParagraphs
         if (buttonId != WriterPanelAssembly.Buttons.ADD_PARAGRAPH) return
         if (assembly.inputFieldInstance.text == "") return
         val addedContent: String = assembly.inputFieldInstance.text
