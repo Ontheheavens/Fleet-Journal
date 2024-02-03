@@ -2,6 +2,7 @@ package fleetjour.scripts.panel
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.*
+import com.fs.starfarer.api.combat.ShipVariantAPI
 import com.fs.starfarer.api.impl.campaign.DerelictShipEntityPlugin
 import com.fs.starfarer.api.impl.campaign.FusionLampEntityPlugin
 import com.fs.starfarer.api.impl.campaign.ids.Tags
@@ -11,6 +12,7 @@ import com.fs.starfarer.api.ui.LabelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.util.Misc
+import com.fs.starfarer.campaign.BaseCampaignEntity
 import fleetjour.scripts.EntryWriter
 
 /**
@@ -27,10 +29,29 @@ object Common {
             return closestAnchor.id
         } else if (targetLocation is StarSystemAPI) {
             val targetSystem: StarSystemAPI = targetLocation
-            val center: SectorEntityToken = targetSystem.star
-            return center.id
+            var center: SectorEntityToken? = targetSystem.star
+            center?: let {
+                center = fetchFirstEligibleEntity(targetSystem)
+            }
+            return center!!.id
         }
         return Global.getSector().playerFleet.id
+    }
+
+    fun fetchFirstEligibleEntity(system: StarSystemAPI): SectorEntityToken {
+        val allEntities = system.allEntities
+        val filtered = allEntities.filter { token ->
+            token is BaseCampaignEntity && !token.isDiscoverable && token.sensorProfile == 0f
+        }
+        return filtered[0]
+    }
+
+    fun getVariantOfDerelict(plugin: DerelictShipEntityPlugin): ShipVariantAPI {
+        var shipVariant = Global.getSettings().getVariant(plugin.data.ship.variantId)
+        shipVariant?: let {
+            shipVariant = plugin.data.ship.variant
+        }
+        return shipVariant
     }
 
     fun getHullClassOfDerelict(entity: SectorEntityToken): String {
@@ -88,6 +109,10 @@ object Common {
         val entityInSector = Global.getSector().getEntityById(entityId)
         entityInSector?.let {
             return entityInSector
+        }
+        if (targetLocation.isNebula) {
+            val system = targetLocation as StarSystemAPI
+            return this.fetchFirstEligibleEntity(system)
         }
         val fleet = Global.getSector().playerFleet
         val fallback = fleet.containingLocation.createToken(fleet.location)
@@ -183,7 +208,8 @@ object Common {
                     else -> return "Jump Point"
                 }
             }
-            entity.customPlugin is DebrisFieldTerrainPlugin -> return "Debris Field"
+            entity is CampaignTerrainAPI &&
+                    (entity as CampaignTerrainAPI).plugin is DebrisFieldTerrainPlugin -> return "Debris Field"
             entity.customPlugin is DerelictShipEntityPlugin -> return "Derelict"
             entity.customPlugin is FusionLampEntityPlugin -> return "Fusion Lamp"
             entity.hasTag(Tags.WRECK) -> return "Wreck"
@@ -207,8 +233,10 @@ object Common {
     fun getTypeForIntelInfo(entity: SectorEntityToken): String {
         when {
             entity is JumpPointAPI -> return "Point"
+            entity is CampaignFleetAPI -> return "Fleet"
+            entity is AsteroidAPI -> return "Asteroid"
             entity.customPlugin is DerelictShipEntityPlugin -> return "Derelict"
-            entity.customPlugin is DebrisFieldTerrainPlugin -> return "Debris"
+            entity is CampaignTerrainAPI && (entity as CampaignTerrainAPI).plugin is DebrisFieldTerrainPlugin -> return "Debris"
             entity.hasTag(Tags.STAR) || entity.isSystemCenter || entity.isStar -> return "Star System"
             entity.hasTag(Tags.GAS_GIANT) -> return "Gas Giant"
             entity.hasTag(Tags.PLANET) -> return "Planet"
@@ -216,8 +244,14 @@ object Common {
             entity.hasTag(Tags.COMM_RELAY) ||
                     entity.hasTag(Tags.NAV_BUOY) ||
                     entity.hasTag(Tags.SENSOR_ARRAY) -> return "Objective"
-            entity.hasTag(Tags.SALVAGEABLE) || entity.hasTag(Tags.WRECK) -> return "Salvage"
+            entity.hasTag(Tags.SALVAGEABLE) -> return "Salvage"
+            entity.hasTag(Tags.WRECK) -> return "Wreck"
             entity.hasTag(Tags.GATE) -> return "Gate"
+            entity.hasTag(Tags.CRYOSLEEPER) -> return "Cryosleeper"
+            entity.hasTag(Tags.STELLAR_MIRROR) ||
+                    entity.hasTag(Tags.STELLAR_SHADE) ||
+                    entity.hasTag(Tags.CORONAL_TAP) -> return "Megastructure"
+            entity.hasTag(Tags.WARNING_BEACON) -> return "Beacon"
         }
         return "Entity"
     }

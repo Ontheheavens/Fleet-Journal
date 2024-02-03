@@ -2,6 +2,7 @@ package fleetjour.scripts.panel
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.SectorEntityToken
+import com.fs.starfarer.api.campaign.StarSystemAPI
 import com.fs.starfarer.api.ui.*
 import com.fs.starfarer.api.util.Misc
 import fleetjour.scripts.objects.SelectableEntity
@@ -124,7 +125,19 @@ object EntitySelectorPanel {
         val container = selectorPanel.createCustomPanel(width, height, null)
         val entitiesContainer = container.createUIElement(width, height, true)
         assembly.selectableEntities.clear()
-        val inputEntities = this.getSortedEntities(assembly)
+        var inputEntities = this.getSortedEntities(assembly)
+        var targetSystem = Common.findTargetLocation(assembly.parent)
+        if (targetSystem is StarSystemAPI) {
+            targetSystem = Common.findTargetLocation(assembly.parent) as StarSystemAPI
+            val explored = targetSystem.isEnteredByPlayer
+            if (!explored) {
+                val defaultEntity = Common.selectDefaultTargetEntity(assembly.parent)
+                var entityInstance: SectorEntityToken? = targetSystem.getEntityById(defaultEntity)
+                entityInstance?: let {
+                    entityInstance =  targetSystem.star}
+                inputEntities = arrayListOf(entityInstance!!)
+            }
+        }
         for (entity in inputEntities) {
             if (this.shouldNotDisplayByDistance(assembly, entity)) continue
             val displayed = SelectableEntity(entity)
@@ -165,7 +178,7 @@ object EntitySelectorPanel {
         displayed.selectButton.highlight()
     }
 
-    private fun shouldNotDisplayByDistance(assembly: WriterPanelAssembly, entity: SectorEntityToken): Boolean {
+    private fun shouldNotDisplayByDistance(assembly: WriterPanelAssembly, entity: SectorEntityToken?): Boolean {
         val isHyperspace = Common.findTargetLocation(assembly.parent).isHyperspace
         val isNotInRange = Misc.getDistanceToPlayerLY(entity) > Constants.DISTANCE_THRESHOLD_FOR_DISPLAY
         return isHyperspace && isNotInRange

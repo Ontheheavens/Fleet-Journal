@@ -6,10 +6,9 @@ import com.fs.starfarer.api.campaign.SectorEntityToken
 import com.fs.starfarer.api.campaign.StarSystemAPI
 import com.fs.starfarer.api.ui.IntelUIAPI
 import fleetjour.scripts.EntryWriter
-import fleetjour.scripts.interaction.EntryManagerDialog
+import fleetjour.scripts.interaction.entrymanager.EntryManagerDialog
 import fleetjour.scripts.interaction.LocationSelectorDialog
 import fleetjour.scripts.objects.DraftParagraph
-import fleetjour.scripts.objects.JournalEntry
 import java.util.*
 
 /**
@@ -41,21 +40,7 @@ object ButtonChecker {
     private fun checkWriteButton(parent: EntryWriter, buttonId: Any) {
         if (buttonId != WriterPanelAssembly.Buttons.WRITE_ENTRY) return
         if (!this.shouldEnableWriteButton(parent)) return
-        val title = parent.assembly.titleFieldInstance.text
-        val brief = parent.assembly.briefFieldInstance.text
-        val contents = arrayListOf<String>()
-        for (paragraph in parent.draftParagraphs) {
-            contents.add(paragraph.content)
-        }
-        val newEntry = JournalEntry(Common.findTargetEntity(parent), title, brief, contents)
-        Global.getSector().intelManager.addIntel(newEntry)
-        parent.draftParagraphs.clear()
-        parent.selectedParagraphIndex = 0
-        parent.assembly.titleFieldInstance.text = ""
-        parent.assembly.briefFieldInstance.text = ""
-        parent.titleFieldValue = ""
-        parent.briefFieldValue = ""
-        parent.customTitleSet = false
+        val newEntry = parent.writeNewEntry()
         Global.getSector().campaignUI.showCoreUITab(CoreUITabId.INTEL, newEntry)
     }
 
@@ -96,13 +81,8 @@ object ButtonChecker {
         val draftParagraphs = parent.draftParagraphs
         if (buttonId != WriterPanelAssembly.Buttons.ADD_PARAGRAPH) return
         if (assembly.inputFieldInstance.text == "") return
-        val paragraph: DraftParagraph = assembly.createParagraphContainer()
-        if (draftParagraphs.size == 0) {
-            draftParagraphs.add(paragraph)
-        } else {
-            draftParagraphs.add(parent.selectedParagraphIndex + 1, paragraph)
-            parent.selectedParagraphIndex++
-        }
+        val addedContent: String = assembly.inputFieldInstance.text
+        parent.addParagraph(addedContent)
         parent.assembly.inputFieldInstance.text = ""
         assembly.renderDraftPanel()
     }
@@ -207,10 +187,13 @@ object ButtonChecker {
         val selectedLocation = Common.findTargetLocation(parent)
         if (selectedLocation !is StarSystemAPI) return
         val system: StarSystemAPI = selectedLocation
-        val center: SectorEntityToken = system.star
+        var center: SectorEntityToken? = system.star
+        center ?: let {
+            center = Common.fetchFirstEligibleEntity(system)
+        }
         if (center == Common.findTargetEntity(parent)) return
-        parent.selectedTargetEntity = center.id
-        parent.selectedTargetLocation = center.containingLocation.id
+        parent.selectedTargetEntity = center!!.id
+        parent.selectedTargetLocation = center!!.containingLocation.id
         parent.assembly.renderStateContainer()
         this.updateSelectEntityButtons(parent)
         parent.assembly.updateTitleByDefault()

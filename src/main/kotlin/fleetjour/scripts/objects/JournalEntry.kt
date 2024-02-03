@@ -2,27 +2,40 @@ package fleetjour.scripts.objects
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.SectorEntityToken
+import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin.ArrowData
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin.ListInfoMode
 import com.fs.starfarer.api.impl.campaign.intel.misc.FleetLogIntel
+import com.fs.starfarer.api.ui.IntelUIAPI
 import com.fs.starfarer.api.ui.SectorMapAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
+import fleetjour.scripts.EntryWriter
 import fleetjour.scripts.panel.Common
+import org.lwjgl.input.Keyboard
 
 /**
  * @author Ontheheavens
  * @since  14.02.2023
  */
 
-class JournalEntry(entity: SectorEntityToken, private val title: String, private val brief: String,
-    private val contents: ArrayList<String>) : FleetLogIntel() {
+class JournalEntry(
+    entity: SectorEntityToken,
+    val title: String,
+    val brief: String,
+    val contents: ArrayList<String>
+) : FleetLogIntel() {
 
     private val target: SectorEntityToken = this.makeDoubleWithSameOrbit(entity)
 
     private val optionalType: String = Common.getHullClassOfDerelict(entity)
 
     private var shouldRemove = false
+
+    private val buttonRewrite = "button_rewrite"
+
+    val targetEntityToken: SectorEntityToken
+        get() = target
 
     init {
         this.setRemoveTrigger(entity)
@@ -54,7 +67,9 @@ class JournalEntry(entity: SectorEntityToken, private val title: String, private
         info.addSpacer(3f)
         info.setParaFontColor(Misc.getGrayColor())
         this.bullet(info)
-        if (brief != "") {
+        if (brief.startsWith("Name: ")) {
+            info.addPara("Name: %s", 0f, highlightColor, brief.substringAfter("Name: "))
+        } else if (brief != "") {
             info.addPara(brief, 0f)
         }
         if (optionalType != "") {
@@ -76,7 +91,31 @@ class JournalEntry(entity: SectorEntityToken, private val title: String, private
         } else {
             info.addSpacer(-10f)
         }
+        addRewriteButton(info, width)
         addDeleteButton(info, width)
+    }
+
+    private fun addRewriteButton(info: TooltipMakerAPI, width: Float) {
+        val opad = 10f
+        val button = info.addButton(
+            "Rewrite log entry", buttonRewrite,
+            factionForUIColors.baseUIColor, factionForUIColors.darkUIColor,
+            width.toInt().toFloat(), 20f, opad * 2f
+        )
+        button.setShortcut(Keyboard.KEY_R, true)
+    }
+
+    override fun buttonPressConfirmed(buttonId: Any, ui: IntelUIAPI) {
+        super.buttonPressConfirmed(buttonId, ui)
+        if (buttonId === buttonRewrite) {
+            val sector = Global.getSector()
+            val intelManager = sector.intelManager
+            var writer: IntelInfoPlugin? = intelManager.getFirstIntel(EntryWriter::class.java) ?: return
+            writer = writer as EntryWriter
+            writer.beginEntryRewrite(this)
+            return
+        }
+        ui.updateUIForItem(this)
     }
 
     override fun getName(): String {

@@ -21,7 +21,8 @@ class LocationSelectorDialog(private val intel: EntryWriter, private val ui: Int
         val starSystemCenters = mutableListOf<SectorEntityToken>()
         for (token in anchors) {
             val system: StarSystemAPI = Misc.getStarSystemForAnchor(token)
-            if (!system.isEnteredByPlayer) continue
+            // If this is enabled distant unexplored systems cannot be targets for notes.
+            // if (!system.isEnteredByPlayer) continue
             starSystemCenters.add(system.center)
         }
         dialog!!.showCampaignEntityPicker("Select location", "Selected:", "Confirm",

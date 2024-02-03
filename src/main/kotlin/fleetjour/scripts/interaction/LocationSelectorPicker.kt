@@ -3,7 +3,10 @@ package fleetjour.scripts.interaction
 import com.fs.starfarer.api.campaign.CampaignEntityPickerListener
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.campaign.SectorEntityToken
+import com.fs.starfarer.api.campaign.StarSystemAPI
+import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
 import com.fs.starfarer.api.ui.IntelUIAPI
+import com.fs.starfarer.api.ui.MarkerData
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import fleetjour.scripts.EntryWriter
 import fleetjour.scripts.panel.Common
@@ -49,6 +52,18 @@ class LocationSelectorPicker(private val ui: IntelUIAPI, private val dialog: Int
 
     override fun getFuelRangeMult(): Float {
         return 0f
+    }
+
+    override fun getArrows(): MutableList<IntelInfoPlugin.ArrowData>? {
+        return null
+    }
+
+    override fun getMarkers(): MutableList<MarkerData>? {
+        return null
+    }
+
+    override fun getStarSystemsToShow(): MutableSet<StarSystemAPI>? {
+        return null
     }
 
 }

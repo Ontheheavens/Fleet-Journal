@@ -1,6 +1,8 @@
 package fleetjour.scripts
 
 import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.campaign.CoreUITabId
+import com.fs.starfarer.api.campaign.SectorEntityToken
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin.IntelSortTier
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin.ListInfoMode
 import com.fs.starfarer.api.impl.campaign.ids.Tags
@@ -11,6 +13,7 @@ import com.fs.starfarer.api.ui.SectorMapAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
 import fleetjour.scripts.objects.DraftParagraph
+import fleetjour.scripts.objects.JournalEntry
 import fleetjour.scripts.panel.ButtonChecker
 import fleetjour.scripts.panel.Common
 import fleetjour.scripts.panel.WriterPanelAssembly
@@ -99,6 +102,97 @@ class EntryWriter: BaseIntelPlugin() {
 
     override fun buttonPressConfirmed(buttonId: Any, ui: IntelUIAPI?) {
         ButtonChecker.checkButtons(this, ui, buttonId)
+    }
+
+    fun writeNewEntry(): JournalEntry {
+        val title = this.titleFieldValue
+        val brief = this.briefFieldValue
+        val contents = arrayListOf<String>()
+        for (paragraph in this.draftParagraphs) {
+            contents.add(paragraph.content)
+        }
+        val newEntry = JournalEntry(Common.findTargetEntity(this), title, brief, contents)
+        Global.getSector().intelManager.addIntel(newEntry)
+        this.draftParagraphs.clear()
+        this.selectedParagraphIndex = 0
+        this.titleFieldValue = ""
+        this.briefFieldValue = ""
+        this.customTitleSet = false
+        return newEntry
+    }
+
+    fun beginEntryRewrite(entry: JournalEntry) {
+        this.titleFieldValue = entry.title
+        this.briefFieldValue = entry.brief
+
+        val targetEntityToken = entry.targetEntityToken
+        this.selectedTargetEntity = targetEntityToken.id
+        this.selectedTargetLocation = targetEntityToken.containingLocation.id
+
+        this.draftParagraphs.clear()
+        this.selectedParagraphIndex = 0
+
+        for (paragraph in entry.contents) {
+            addParagraph(paragraph)
+        }
+
+        Global.getSector().campaignUI.showCoreUITab(CoreUITabId.INTEL, this)
+    }
+
+    fun applyEntityInfo(entity: SectorEntityToken) {
+        val title = "Notable " + Common.getTypeForIntelInfo(entity)
+        this.titleFieldValue = title
+        this.briefFieldValue = "Name: " + entity.name
+
+        this.selectedTargetEntity = entity.id
+        this.selectedTargetLocation = entity.containingLocation.id
+
+        this.draftParagraphs.clear()
+        this.selectedParagraphIndex = 0
+        addCircumstanceParagraphs(entity)
+
+        Global.getSector().campaignUI.showCoreUITab(CoreUITabId.INTEL, this)
+    }
+
+    private fun addCircumstanceParagraphs(entity: SectorEntityToken) {
+        addCurrentDate()
+        addParagraph("Location: " + entity.containingLocation.name)
+        if (entity.faction != null && !entity.faction.isNeutralFaction) {
+            addParagraph("Faction: " + entity.faction.displayName)
+        }
+    }
+
+    private fun addCurrentDate() {
+        addParagraph("Date: " + Global.getSector().clock.dateString)
+    }
+
+    fun addParagraph(text: String): DraftParagraph {
+        val paragraph = DraftParagraph(text, ++this.paragraphIDCounter)
+        if (draftParagraphs.size == 0) {
+            draftParagraphs.add(paragraph)
+        } else {
+            draftParagraphs.add(this.selectedParagraphIndex + 1, paragraph)
+            this.selectedParagraphIndex++
+        }
+        return paragraph
+    }
+
+    fun writeQuickEntry(entity: SectorEntityToken,
+                        forceNoMessage: Boolean = false,
+                        titlePrefix: String = "Notable "): JournalEntry {
+        val title = titlePrefix + Common.getTypeForIntelInfo(entity)
+        val brief = "Name: " + entity.name
+
+        val contents = arrayListOf<String>()
+        contents.add("Date: " + Global.getSector().clock.dateString)
+        contents.add("Location: " + entity.containingLocation.name)
+        if (entity.faction != null && !entity.faction.isNeutralFaction) {
+            contents.add("Faction: " + entity.faction.displayName)
+        }
+
+        val newEntry = JournalEntry(entity, title, brief, contents)
+        Global.getSector().intelManager.addIntel(newEntry, forceNoMessage)
+        return newEntry
     }
 
 }

@@ -4,10 +4,10 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.SectorEntityToken
 import com.fs.starfarer.api.campaign.StarSystemAPI
 import com.fs.starfarer.api.ui.*
-import com.fs.starfarer.api.ui.Fonts.*
+import com.fs.starfarer.api.ui.Fonts.GROUP_NUM_FONT
+import com.fs.starfarer.api.ui.Fonts.ORBITRON_24AABOLD
 import com.fs.starfarer.api.util.Misc
 import fleetjour.scripts.EntryWriter
-import fleetjour.scripts.objects.DraftParagraph
 import fleetjour.scripts.objects.SelectableEntity
 import fleetjour.settings.SettingsHolder
 
@@ -152,6 +152,27 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
         headerContainer.addImage(imageName, 0f)
         val image: UIComponentAPI = headerContainer.prev
         image.position.inTL(0f, 0f)
+
+        val tooltip: BaseTooltipCreator = object: BaseTooltipCreator() {
+            override fun isTooltipExpandable(tooltipParam: Any?): Boolean {
+                return false
+            }
+            override fun getTooltipWidth(tooltipParam: Any?): Float {
+                return 300f
+            }
+            override fun createTooltip(tooltip: TooltipMakerAPI?, expanded: Boolean, tooltipParam: Any?) {
+                tooltip?: return
+                tooltip.addSectionHeading("Hints", Alignment.MID, 0f)
+                tooltip.setBulletedListMode("  - ")
+                val highlightColor = Misc.getHighlightColor()
+                tooltip.addPara("Mouse over entity and press %s to write quick journal entry of it", 6f, highlightColor, "J")
+                tooltip.addPara("Hold %s and press %s to open journal with moused over entity as target",
+                    4f, highlightColor, "Control", "J")
+                tooltip.addSpacer(1f)
+            }
+        }
+        headerContainer.addTooltipToPrevious(tooltip, TooltipMakerAPI.TooltipLocation.BELOW)
+
         return image
     }
 
@@ -245,18 +266,12 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
         deleteButton.position.rightOfMid(appendButton, 10f)
     }
 
-    fun createParagraphContainer(): DraftParagraph {
-        val addedContent: String = this.inputFieldInstance.text
-        return DraftParagraph(addedContent, ++this.parent.paragraphIDCounter)
-    }
-
     private fun shouldEnableSystemCenterButton(parent: EntryWriter): Boolean {
         val selectedLocation = Common.findTargetLocation(parent)
         if (selectedLocation !is StarSystemAPI) return false
         val system: StarSystemAPI = selectedLocation
         val center: SectorEntityToken = system.center
-        if (center != Common.findTargetEntity(parent)) return true
-        return false
+        return center != Common.findTargetEntity(parent)
     }
 
     private fun shouldEnableOrbitFocusButton(parent: EntryWriter): Boolean {
@@ -267,7 +282,11 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
     fun updateTitleByDefault() {
         if (parent.customTitleSet) return
         val entity = Common.findTargetEntity(parent)
-        val title = "Notable " + Common.getTypeForIntelInfo(entity)
+        updateTitle(entity)
+    }
+
+    private fun updateTitle(entityToken: SectorEntityToken) {
+        val title = "Notable " + Common.getTypeForIntelInfo(entityToken)
         this.titleFieldInstance.text = title
         parent.titleFieldValue = title
         writeButton.isEnabled = ButtonChecker.shouldEnableWriteButton(parent)
