@@ -7,6 +7,9 @@ import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.util.Misc
+import fleetjour.scripts.interaction.shared.ButtonListener
+import fleetjour.scripts.interaction.shared.GroupButton
+import fleetjour.scripts.interaction.shared.InteractiveButton
 import java.awt.Color
 
 /**
@@ -29,7 +32,7 @@ class IntelEntry(val plugin: IntelInfoPlugin) {
     }
 
     fun createEntry(section: CustomPanelAPI, entry: IntelInfoPlugin): Pair<CustomPanelAPI, Float> {
-        val width = PanelConstants.ENTRIES_LIST_WIDTH
+        val width = EntryManagerConstants.ENTRIES_LIST_WIDTH
         val entryContainer = section.createCustomPanel(width, 20f, EntryPanelOverseer.plugin)
         val entryTooltip = entryContainer.createUIElement(width - 8f, 20f, false)
         val dummy = entryTooltip.beginImageWithText(Global.getSettings().getSpriteName("intel",
@@ -60,47 +63,17 @@ class IntelEntry(val plugin: IntelInfoPlugin) {
     }
 
     private fun createButton(selectEntryButton: ButtonAPI): InteractiveButton {
-        val buttonWrapper = object : InteractiveButton(selectEntryButton, Type.ENTRY) {
-            private var checkedLastFrame = false
-            private var othersUnchecked = false
-            private var checkedAtCreation = false
+        val buttonWrapper = object : GroupButton(selectEntryButton, Type.ENTRY) {
+
             override fun applyEffect() {
                 if (EntriesSection.selectedEntry == this@IntelEntry.plugin) return
                 EntriesSection.selectedEntry = this@IntelEntry.plugin
                 this.instance.highlight()
-                this.instance.isEnabled = false
-                this.instance.setButtonDisabledPressedSound("ui_button_pressed")
                 EntryPanelAssembly.controlButtonsRedrawQueued = true
             }
-            fun affectOthersInGroup() {
-                for (button in ButtonListener.getIndex()!!) {
-                    if (button.type !== this.type) continue
-                    if (button === this) continue
-                    button.instance.isChecked = false
-                    button.instance.isEnabled = true
-                    button.instance.unhighlight()
-                }
-            }
-            override fun check() {
-                val instance: ButtonAPI = this.instance
-                if (!instance.isChecked) {
-                    checkedLastFrame = false
-                    othersUnchecked = false
-                    return
-                }
-                if (!othersUnchecked) {
-                    affectOthersInGroup()
-                    othersUnchecked = true
-                }
-                if (checkedAtCreation) {
-                    checkedAtCreation = false
-                    checkedLastFrame = true
-                    return
-                }
-                if (!checkedLastFrame) {
-                    applyEffect()
-                    checkedLastFrame = true
-                }
+
+            override fun getGroupButtons(): Set<InteractiveButton> {
+                return ButtonListener.getIndex()!!
             }
         }
         return buttonWrapper

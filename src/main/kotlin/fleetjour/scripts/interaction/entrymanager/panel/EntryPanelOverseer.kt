@@ -1,10 +1,14 @@
 package fleetjour.scripts.interaction.entrymanager.panel
 
+import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.campaign.CoreUITabId
 import com.fs.starfarer.api.campaign.CustomUIPanelPlugin
 import com.fs.starfarer.api.campaign.CustomVisualDialogDelegate.DialogCallbacks
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.IntelUIAPI
+import fleetjour.scripts.EntryWriter
+import fleetjour.scripts.interaction.shared.ButtonListener
 
 /**
  * @author Ontheheavens
@@ -18,13 +22,16 @@ object EntryPanelOverseer {
     private var dialog: InteractionDialogAPI? = null
     var plugin: CustomUIPanelPlugin? = null
     private var intelUI: IntelUIAPI? = null
+    private var journal: EntryWriter? = null
 
     fun initialize(panel: CustomPanelAPI, callbacks: DialogCallbacks,
-                   dialog: InteractionDialogAPI, ui: IntelUIAPI, plugin: CustomUIPanelPlugin) {
+                   dialog: InteractionDialogAPI, ui: IntelUIAPI,
+                   plugin: CustomUIPanelPlugin, journal: EntryWriter) {
         EntryPanelOverseer.panel = panel
         EntryPanelOverseer.callbacks = callbacks
         EntryPanelOverseer.dialog = dialog
         EntryPanelOverseer.plugin = plugin
+        EntryPanelOverseer.journal = journal
         intelUI = ui
     }
 
@@ -46,8 +53,9 @@ object EntryPanelOverseer {
         ButtonListener.clearIndex()
         // Dismissing dialog itself means exit from initialization dialog too.
         dialog?.dismiss()
-        intelUI?.updateIntelList()
+        intelUI?.updateIntelList(true)
         intelUI?.recreateIntelUI()
+        Global.getSector().campaignUI.showCoreUITab(CoreUITabId.INTEL, journal)
     }
 
 }

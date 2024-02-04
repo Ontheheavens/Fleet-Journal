@@ -43,7 +43,7 @@ object EntriesSection {
             parentPanelInstance?.removeComponent(listPanelInstance)
         }
         val sectionContainer = parentPanelInstance?.createCustomPanel(
-            PanelConstants.CONTENT_WIDTH,
+            EntryManagerConstants.CONTENT_WIDTH,
             sectionHeight, EntryPanelOverseer.plugin
         )
         val list = createEntriesList(sectionContainer, sectionHeight)
@@ -86,7 +86,7 @@ object EntriesSection {
 
     private fun createEntriesList(section: CustomPanelAPI?, height: Float): TooltipMakerAPI? {
         section?: return null
-        val listContainer = section.createUIElement(PanelConstants.ENTRIES_LIST_WIDTH, height, true)
+        val listContainer = section.createUIElement(EntryManagerConstants.ENTRIES_LIST_WIDTH, height, true)
         val allEntries = retrieveFilteredEntries()
         if (allEntries.size == 0) return listContainer
         showedEntries = linkedMapOf()
