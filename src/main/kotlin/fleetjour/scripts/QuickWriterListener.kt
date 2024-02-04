@@ -47,7 +47,8 @@ class QuickWriterListener : EveryFrameScript {
         if (isControlPressed()) {
             writer.applyEntityInfo(mousedOverEntity)
         } else {
-            writer.writeQuickEntry(mousedOverEntity)
+            val quickEntry = writer.writeQuickEntry(mousedOverEntity)
+            Global.getSector().intelManager.addIntel(quickEntry)
         }
         canWrite = false
     }

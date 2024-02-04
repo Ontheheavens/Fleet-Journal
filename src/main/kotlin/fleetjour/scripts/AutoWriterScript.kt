@@ -7,6 +7,9 @@ import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
 import com.fs.starfarer.api.campaign.listeners.DiscoverEntityListener
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.impl.campaign.DerelictShipEntityPlugin
+import com.fs.starfarer.api.impl.campaign.HiddenCacheEntityPlugin
+import com.fs.starfarer.api.impl.campaign.SupplyCacheEntityPlugin
+import com.fs.starfarer.api.impl.campaign.ids.Tags
 import com.fs.starfarer.api.impl.campaign.terrain.DebrisFieldTerrainPlugin
 import fleetjour.scripts.objects.JournalEntry
 import fleetjour.scripts.panel.Common
@@ -40,7 +43,9 @@ class AutoWriterScript : DiscoverEntityListener {
             }
         }
         writer = writer as EntryWriter
-        writer.writeQuickEntry(entity, true, "Observed ")
+        val autoEntry = writer.writeQuickEntry(entity, "Observed ")
+        autoEntry.icon = getIconForEntity(entity)
+        Global.getSector().intelManager.addIntel(autoEntry, true)
     }
 
     private fun checkLoggingValidity(entity: SectorEntityToken): Boolean {
@@ -71,5 +76,25 @@ class AutoWriterScript : DiscoverEntityListener {
             else -> false
         }
     }
+
+    private fun getIconForEntity(entity: SectorEntityToken): String {
+        var iconID = "entry_exclamation"
+        when {
+            Common.entityIsCryosleeper(entity) -> iconID = "entry_cryosleeper"
+            Common.entityIsProbe(entity) -> iconID = "entry_probe"
+            entity.customPlugin is SupplyCacheEntityPlugin || entity.customPlugin is HiddenCacheEntityPlugin ->
+                iconID = "entry_cache"
+            entity.customPlugin is DerelictShipEntityPlugin -> iconID = "entry_derelict"
+            entity is CampaignTerrainAPI && (entity as CampaignTerrainAPI).plugin is DebrisFieldTerrainPlugin ->
+                iconID = "entry_debris"
+            entity.hasTag(Tags.STAR) || entity.isSystemCenter || entity.isStar -> iconID = "entry_stellar_body"
+            entity.hasTag(Tags.GAS_GIANT) -> iconID = "entry_stellar_body"
+            entity.hasTag(Tags.PLANET) -> iconID = "entry_stellar_body"
+            entity.hasTag(Tags.STATION) -> iconID = "entry_station"
+        }
+        return Global.getSettings().getSpriteName("fleetjour_intel", iconID)
+    }
+
+
 
 }

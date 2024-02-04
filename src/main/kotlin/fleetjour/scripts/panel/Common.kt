@@ -5,6 +5,9 @@ import com.fs.starfarer.api.campaign.*
 import com.fs.starfarer.api.combat.ShipVariantAPI
 import com.fs.starfarer.api.impl.campaign.DerelictShipEntityPlugin
 import com.fs.starfarer.api.impl.campaign.FusionLampEntityPlugin
+import com.fs.starfarer.api.impl.campaign.HiddenCacheEntityPlugin
+import com.fs.starfarer.api.impl.campaign.SupplyCacheEntityPlugin
+import com.fs.starfarer.api.impl.campaign.ids.Entities
 import com.fs.starfarer.api.impl.campaign.ids.Tags
 import com.fs.starfarer.api.impl.campaign.terrain.DebrisFieldTerrainPlugin
 import com.fs.starfarer.api.ui.ButtonAPI
@@ -198,6 +201,7 @@ object Common {
 
     fun getEntityType(entity: SectorEntityToken): String {
         when {
+            entityIsProbe(entity) -> return "Probe"
             entity is PlanetAPI -> return entity.typeNameWithWorld
             entity is OrbitalStationAPI -> return "Orbital Station"
             entity is JumpPointAPI -> kotlin.run {
@@ -208,23 +212,25 @@ object Common {
                     else -> return "Jump Point"
                 }
             }
-            entity is CampaignTerrainAPI &&
-                    (entity as CampaignTerrainAPI).plugin is DebrisFieldTerrainPlugin -> return "Debris Field"
-            entity.customPlugin is DerelictShipEntityPlugin -> return "Derelict"
-            entity.customPlugin is FusionLampEntityPlugin -> return "Fusion Lamp"
-            entity.hasTag(Tags.WRECK) -> return "Wreck"
-            entity.hasTag(Tags.SALVAGEABLE) -> return "Salvageable"
             entity.hasTag(Tags.COMM_RELAY) ||
-                entity.hasTag(Tags.NAV_BUOY) ||
-                entity.hasTag(Tags.SENSOR_ARRAY) ||
-                entity.hasTag(Tags.STABLE_LOCATION) -> return "Objective"
+                    entity.hasTag(Tags.NAV_BUOY) ||
+                    entity.hasTag(Tags.SENSOR_ARRAY) ||
+                    entity.hasTag(Tags.STABLE_LOCATION) -> return "Objective"
             entity.hasTag(Tags.STATION) -> return "Station"
             entity.hasTag(Tags.GATE) -> return "Gate"
             entity.hasTag(Tags.STELLAR_MIRROR) -> return "Stellar Mirror"
             entity.hasTag(Tags.STELLAR_SHADE) -> return "Stellar Shade"
-            entity.hasTag(Tags.CRYOSLEEPER) -> return "Cryosleeper"
+            entityIsCryosleeper(entity) -> return "Cryosleeper"
             entity.hasTag(Tags.CORONAL_TAP) -> return "Coronal Tap"
             entity.hasTag(Tags.WARNING_BEACON) -> return "Warning Beacon"
+            entity is CampaignTerrainAPI &&
+                    (entity as CampaignTerrainAPI).plugin is DebrisFieldTerrainPlugin -> return "Debris Field"
+            entity.customPlugin is DerelictShipEntityPlugin -> return "Derelict"
+            entity.customPlugin is FusionLampEntityPlugin -> return "Fusion Lamp"
+            entity.customPlugin is SupplyCacheEntityPlugin || entity.customPlugin is HiddenCacheEntityPlugin ->
+                return "Cache"
+            entity.hasTag(Tags.WRECK) -> return "Wreck"
+            entity.hasTag(Tags.SALVAGEABLE) -> return "Salvageable"
             else -> return "Notable Entity"
         }
         return "Notable Entity"
@@ -232,10 +238,20 @@ object Common {
 
     fun getTypeForIntelInfo(entity: SectorEntityToken): String {
         when {
+            entityIsProbe(entity) -> return "Probe"
             entity is JumpPointAPI -> return "Point"
             entity is CampaignFleetAPI -> return "Fleet"
             entity is AsteroidAPI -> return "Asteroid"
+            entity.hasTag(Tags.WRECK) -> return "Wreck"
+            entity.hasTag(Tags.GATE) -> return "Gate"
+            entityIsCryosleeper(entity) -> return "Cryosleeper"
+            entity.hasTag(Tags.STELLAR_MIRROR) ||
+                    entity.hasTag(Tags.STELLAR_SHADE) ||
+                    entity.hasTag(Tags.CORONAL_TAP) -> return "Megastructure"
+            entity.hasTag(Tags.WARNING_BEACON) -> return "Beacon"
             entity.customPlugin is DerelictShipEntityPlugin -> return "Derelict"
+            entity.customPlugin is SupplyCacheEntityPlugin || entity.customPlugin is HiddenCacheEntityPlugin ->
+                return "Cache"
             entity is CampaignTerrainAPI && (entity as CampaignTerrainAPI).plugin is DebrisFieldTerrainPlugin -> return "Debris"
             entity.hasTag(Tags.STAR) || entity.isSystemCenter || entity.isStar -> return "Star System"
             entity.hasTag(Tags.GAS_GIANT) -> return "Gas Giant"
@@ -245,15 +261,18 @@ object Common {
                     entity.hasTag(Tags.NAV_BUOY) ||
                     entity.hasTag(Tags.SENSOR_ARRAY) -> return "Objective"
             entity.hasTag(Tags.SALVAGEABLE) -> return "Salvage"
-            entity.hasTag(Tags.WRECK) -> return "Wreck"
-            entity.hasTag(Tags.GATE) -> return "Gate"
-            entity.hasTag(Tags.CRYOSLEEPER) -> return "Cryosleeper"
-            entity.hasTag(Tags.STELLAR_MIRROR) ||
-                    entity.hasTag(Tags.STELLAR_SHADE) ||
-                    entity.hasTag(Tags.CORONAL_TAP) -> return "Megastructure"
-            entity.hasTag(Tags.WARNING_BEACON) -> return "Beacon"
         }
         return "Entity"
+    }
+
+    fun entityIsProbe(entity: SectorEntityToken): Boolean {
+        return entity.customEntityType != null && (entity.customEntityType.equals(Entities.GENERIC_PROBE) ||
+                entity.customEntityType.equals(Entities.DERELICT_SURVEY_PROBE))
+    }
+
+    fun entityIsCryosleeper(entity: SectorEntityToken): Boolean {
+        val hasCustomType = entity.customEntityType != null && entity.customEntityType.equals(Entities.DERELICT_CRYOSLEEPER)
+        return hasCustomType || entity.hasTag(Tags.CRYOSLEEPER)
     }
 
     private fun findClosestJumpPoint(): SectorEntityToken {

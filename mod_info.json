@@ -2,7 +2,7 @@
 	"id":"fleet_journal",
 	"name":"Fleet Journal",
 	"author":"Ontheheavens",
-	"version":"1.0.9",
+	"version":"1.1.0",
 	"description":"UI for creating custom intel entries.",
 	"gameVersion":"0.97a-RC6",
 	"jars":["jars/fleet_journal.jar"],
@@ -12,7 +12,7 @@
     	"dependencies": [
         	{
             	"id": "lw_lazylib",
-           	"name": "LazyLib",
+           		"name": "LazyLib"
       	  	}
     	]
 }

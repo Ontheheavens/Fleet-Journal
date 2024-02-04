@@ -6,8 +6,18 @@
 
     		"fleet_journal": "graphics/fleetjour/icons/intel/fleet_journal.png",
 
-        	},
+    		"entry_cache": "graphics/fleetjour/icons/intel/entry_cache.png",
+		"entry_debris": "graphics/fleetjour/icons/intel/entry_debris.png",
+		"entry_derelict": "graphics/fleetjour/icons/intel/entry_derelict.png",
+		"entry_entity": "graphics/fleetjour/icons/intel/entry_entity.png",
+		"entry_exclamation": "graphics/fleetjour/icons/intel/entry_exclamation.png",
+		"entry_station": "graphics/fleetjour/icons/intel/entry_station.png",
+		"entry_stellar_body": "graphics/fleetjour/icons/intel/entry_stellar_body.png",
+		"entry_probe": "graphics/fleetjour/icons/intel/entry_probe.png",
+		"entry_cryosleeper": "graphics/fleetjour/icons/intel/entry_cryosleeper.png"
 
-    	}
+		}
+
+	}
 
 }

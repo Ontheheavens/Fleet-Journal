@@ -65,15 +65,13 @@ object ButtonChecker {
     }
 
     fun shouldEnableWriteButton(parent: EntryWriter): Boolean {
-        if (parent.assembly.titleFieldInstance.text != "") return true
-        return false
+        return parent.assembly.titleFieldInstance.text != ""
     }
 
     fun shouldEnableDeleteButton(parent: EntryWriter): Boolean {
         if (parent.draftParagraphs.size <= 0) return false
         val selectedParagraph = parent.draftParagraphs[parent.selectedParagraphIndex]
-        if (selectedParagraph.content.contains(" ")) return true
-        return false
+        return selectedParagraph.content.contains(" ")
     }
 
     private fun checkAddButton(parent: EntryWriter, buttonId: Any) {

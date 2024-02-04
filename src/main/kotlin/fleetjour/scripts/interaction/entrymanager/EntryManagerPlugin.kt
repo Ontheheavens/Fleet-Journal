@@ -1,52 +1,37 @@
 package fleetjour.scripts.interaction.entrymanager
 
-import com.fs.starfarer.api.campaign.CustomUIPanelPlugin
 import com.fs.starfarer.api.campaign.CustomVisualDialogDelegate.DialogCallbacks
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
-import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.IntelUIAPI
-import com.fs.starfarer.api.ui.PositionAPI
 import fleetjour.scripts.interaction.entrymanager.panel.EntryPanelAssembly
 import fleetjour.scripts.interaction.entrymanager.panel.EntryPanelOverseer
-import org.lwjgl.input.Keyboard
+import fleetjour.scripts.interaction.shared.AbstractPanelPlugin
 
 /**
  * @author Ontheheavens
  * @since  16.02.2023
  */
 
-class EntryManagerPlugin(val ui: IntelUIAPI) : CustomUIPanelPlugin {
+class EntryManagerPlugin(ui: IntelUIAPI) : AbstractPanelPlugin(ui) {
 
-    fun initialize(panel: CustomPanelAPI?, callbacks: DialogCallbacks?, dialog: InteractionDialogAPI?) {
-        panel?: return
-        callbacks?: return
-        dialog?: return
+    override fun assemblePanel(
+        panel: CustomPanelAPI,
+        callbacks: DialogCallbacks,
+        dialog: InteractionDialogAPI,
+        ui: IntelUIAPI
+    ) {
         EntryPanelOverseer.initialize(panel, callbacks, dialog, ui, this)
         EntryPanelAssembly.assemble(panel)
     }
 
-    override fun positionChanged(position: PositionAPI?) {}
-
-    override fun renderBelow(alphaMult: Float) {}
-
-    override fun render(alphaMult: Float) {}
-
-    override fun advance(amount: Float) {
+    override fun doEveryFrame(amount: Float) {
         EntryPanelOverseer.advance()
     }
 
-    override fun processInput(events: MutableList<InputEventAPI>?) {
-        for (event in events!!) {
-            if (event.isConsumed) continue
-            if (event.isKeyDownEvent && event.eventValue == Keyboard.KEY_ESCAPE) {
-                event.consume()
-                EntryPanelOverseer.dismissPanel()
-                return
-            }
-        }
+    override fun dismissPanelImpl() {
+        EntryPanelOverseer.dismissPanel()
     }
 
-    override fun buttonPressed(buttonId: Any?) {}
 
 }

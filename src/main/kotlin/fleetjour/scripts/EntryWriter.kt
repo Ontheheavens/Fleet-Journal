@@ -177,9 +177,10 @@ class EntryWriter: BaseIntelPlugin() {
         return paragraph
     }
 
-    fun writeQuickEntry(entity: SectorEntityToken,
-                        forceNoMessage: Boolean = false,
-                        titlePrefix: String = "Notable "): JournalEntry {
+    fun writeQuickEntry(
+        entity: SectorEntityToken,
+        titlePrefix: String = "Notable "
+    ): JournalEntry {
         val title = titlePrefix + Common.getTypeForIntelInfo(entity)
         val brief = "Name: " + entity.name
 
@@ -190,9 +191,7 @@ class EntryWriter: BaseIntelPlugin() {
             contents.add("Faction: " + entity.faction.displayName)
         }
 
-        val newEntry = JournalEntry(entity, title, brief, contents)
-        Global.getSector().intelManager.addIntel(newEntry, forceNoMessage)
-        return newEntry
+        return JournalEntry(entity, title, brief, contents)
     }
 
 }
