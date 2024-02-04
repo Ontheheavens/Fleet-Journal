@@ -1,4 +1,4 @@
-package fleetjour.scripts.interaction.entrymanager.panel
+package fleetjour.scripts.interaction.shared
 
 import com.fs.starfarer.api.ui.ButtonAPI
 
@@ -7,15 +7,9 @@ import com.fs.starfarer.api.ui.ButtonAPI
  * @since  17.02.2023
  */
 
-open class InteractiveButton(val instance: ButtonAPI, val type: Type) {
+abstract class InteractiveButton(val instance: ButtonAPI) {
 
-    enum class Type {
-        STANDARD,
-        ENTRY,
-        TAG
-    }
-
-    open fun applyEffect() {}
+    abstract fun applyEffect()
 
     open fun check() {
         if (instance.isChecked) {

@@ -1,4 +1,4 @@
-package fleetjour.scripts.interaction.entrymanager.panel
+package fleetjour.scripts.interaction.shared
 
 /**
  * @author Ontheheavens

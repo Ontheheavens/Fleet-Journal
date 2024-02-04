@@ -6,8 +6,8 @@ import com.fs.starfarer.api.campaign.SectorEntityToken
 import com.fs.starfarer.api.campaign.StarSystemAPI
 import com.fs.starfarer.api.ui.IntelUIAPI
 import fleetjour.scripts.EntryWriter
-import fleetjour.scripts.interaction.entrymanager.EntryManagerDialog
 import fleetjour.scripts.interaction.LocationSelectorDialog
+import fleetjour.scripts.interaction.entrymanager.EntryManagerDialog
 import fleetjour.scripts.objects.DraftParagraph
 import java.util.*
 
@@ -20,7 +20,7 @@ object ButtonChecker {
 
     fun checkButtons(parent: EntryWriter, ui: IntelUIAPI?, buttonId: Any) {
         this.checkWriteButton(parent, buttonId)
-        this.checkManageEntriesButton(ui, buttonId)
+        this.checkManageEntriesButton(parent, ui, buttonId)
         this.checkAddButton(parent, buttonId)
         this.checkRemoveButton(parent, buttonId)
         this.checkMovementButtons(parent, buttonId)
@@ -35,6 +35,20 @@ object ButtonChecker {
         this.checkSelectEntityButtons(parent, buttonId)
         this.checkSetTitleButton(parent, buttonId)
         this.checkSetBriefButton(parent, buttonId)
+        this.checkIconForwardButton(parent, buttonId)
+        this.checkIconBackwardButton(parent, buttonId)
+    }
+
+    private fun checkIconForwardButton(parent: EntryWriter, buttonId: Any) {
+        if (buttonId != WriterPanelAssembly.Buttons.ICON_FORWARD) return
+        parent.assembly.cycleIconsForward()
+        parent.assembly.renderDraftIcon()
+    }
+
+    private fun checkIconBackwardButton(parent: EntryWriter, buttonId: Any) {
+        if (buttonId != WriterPanelAssembly.Buttons.ICON_BACKWARD) return
+        parent.assembly.cycleIconsBackward()
+        parent.assembly.renderDraftIcon()
     }
 
     private fun checkWriteButton(parent: EntryWriter, buttonId: Any) {
@@ -44,9 +58,9 @@ object ButtonChecker {
         Global.getSector().campaignUI.showCoreUITab(CoreUITabId.INTEL, newEntry)
     }
 
-    private fun checkManageEntriesButton(ui: IntelUIAPI?, buttonId: Any) {
+    private fun checkManageEntriesButton(parent: EntryWriter, ui: IntelUIAPI?, buttonId: Any) {
         if (buttonId != WriterPanelAssembly.Buttons.MANAGE_ENTRIES) return
-        ui?.showDialog(null, EntryManagerDialog(ui))
+        ui?.showDialog(null, EntryManagerDialog(ui, parent))
     }
 
     private fun checkSetTitleButton(parent: EntryWriter, buttonId: Any) {
@@ -65,7 +79,7 @@ object ButtonChecker {
     }
 
     fun shouldEnableWriteButton(parent: EntryWriter): Boolean {
-        return parent.assembly.titleFieldInstance.text != ""
+        return parent.titleFieldValue != ""
     }
 
     fun shouldEnableDeleteButton(parent: EntryWriter): Boolean {

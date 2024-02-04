@@ -1,7 +1,8 @@
 package fleetjour.scripts.interaction.entrymanager
 
 import com.fs.starfarer.api.ui.IntelUIAPI
-import fleetjour.scripts.interaction.entrymanager.panel.PanelConstants
+import fleetjour.scripts.EntryWriter
+import fleetjour.scripts.interaction.entrymanager.panel.EntryManagerConstants
 import fleetjour.scripts.interaction.shared.AbstractPanelDialog
 
 /**
@@ -9,12 +10,12 @@ import fleetjour.scripts.interaction.shared.AbstractPanelDialog
  * @since  16.02.2023
  */
 
-class EntryManagerDialog(ui: IntelUIAPI) : AbstractPanelDialog(ui) {
+class EntryManagerDialog(ui: IntelUIAPI, private val journal: EntryWriter) : AbstractPanelDialog(ui) {
 
     override fun showCustomDialog() {
         dialog.showCustomVisualDialog(
-            PanelConstants.PANEL_WIDTH,
-            PanelConstants.PANEL_HEIGHT, EntryManagerDelegate(EntryManagerPlugin(ui), this.dialog)
+            EntryManagerConstants.PANEL_WIDTH,
+            EntryManagerConstants.PANEL_HEIGHT, EntryManagerDelegate(EntryManagerPlugin(ui, journal), this.dialog)
         )
     }
 

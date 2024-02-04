@@ -34,7 +34,9 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
         WRITE_ENTRY,
         MANAGE_ENTRIES,
         SET_TITLE,
-        SET_BRIEF
+        SET_BRIEF,
+        ICON_FORWARD,
+        ICON_BACKWARD
     }
 
     enum class EntityDisplayTags {
@@ -52,6 +54,10 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
     val parent: EntryWriter = intel
 
     private lateinit var headerInstance: CustomPanelAPI
+
+    private lateinit var headerContainer: TooltipMakerAPI
+    private lateinit var iconComponent: UIComponentAPI
+
     private lateinit var draftPanelInstance: CustomPanelAPI
     lateinit var inputFieldInstance: TextFieldAPI
     lateinit var titleFieldInstance: TextFieldAPI
@@ -80,6 +86,41 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
     lateinit var thirdTagSorter: ButtonAPI
     lateinit var fourthTagSorter: ButtonAPI
 
+    var icons: Map<Int, String> = createIconRepository()
+
+    fun cycleIconsForward() {
+        if (parent.selectedIconIndex + 1 == icons.size) {
+            parent.selectedIconIndex = 0
+        } else {
+            parent.selectedIconIndex++
+        }
+    }
+
+    fun cycleIconsBackward() {
+        if (parent.selectedIconIndex == 0) {
+            parent.selectedIconIndex = icons.size - 1
+        } else {
+            parent.selectedIconIndex--
+        }
+    }
+
+    private fun createIconRepository(): Map<Int, String> {
+        val settings = Global.getSettings()
+        val category = "fleetjour_intel"
+        return hashMapOf(
+            Pair(0, settings.getSpriteName("intel", "fleet_log")),
+            Pair(1, settings.getSpriteName(category, "entry_cache")),
+            Pair(2, settings.getSpriteName(category, "entry_debris")),
+            Pair(3, settings.getSpriteName(category, "entry_derelict")),
+            Pair(4, settings.getSpriteName(category, "entry_entity")),
+            Pair(5, settings.getSpriteName(category, "entry_exclamation")),
+            Pair(6, settings.getSpriteName(category, "entry_station")),
+            Pair(7, settings.getSpriteName(category, "entry_stellar_body")),
+            Pair(8, settings.getSpriteName(category, "entry_probe")),
+            Pair(9, settings.getSpriteName(category, "entry_cryosleeper"))
+        )
+    }
+
     fun assemblePanel() {
         headerInstance = this.createHeader()
         mainPanel.addComponent(headerInstance).inTL(10f, 0f)
@@ -100,7 +141,7 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
     private fun createHeader(): CustomPanelAPI {
         val width = panelWidth - Constants.RIGHTSIDE_OFFSET
         val headerPanel: CustomPanelAPI = mainPanel.createCustomPanel(width, Constants.HEADER_HEIGHT, null)
-        val headerContainer = headerPanel.createUIElement(width, 2f, false)
+        headerContainer = headerPanel.createUIElement(width, 2f, false)
         val image = addHeaderImage(headerContainer)
         this.createHeaderTextFields(headerContainer, image)
         headerContainer.setButtonFontVictor14()
@@ -145,6 +186,44 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
         briefTextField.position.rightOfMid(briefAnchor, 60f)
         val setBriefButton = headerContainer.addButton("Set", Buttons.SET_BRIEF, 40f, 28f, 0f)
         setBriefButton.position.rightOfMid(briefTextField, 10f)
+
+        createIconWidget(headerContainer, setTitleButton)
+    }
+
+    fun renderDraftIcon() {
+        if (this::iconComponent.isInitialized) {
+            headerContainer.removeComponent(iconComponent)
+        }
+        val iconID = icons[parent.selectedIconIndex]
+        headerContainer.addImage(iconID, 0f)
+        iconComponent = headerContainer.prev
+
+        val imagePosition = iconComponent.position
+        imagePosition.rightOfMid(titleFieldInstance, 70f)
+        imagePosition.setYAlignOffset(-22f)
+    }
+
+    private fun createIconWidget(headerContainer: TooltipMakerAPI, setTitleButtonAnchor: UIComponentAPI) {
+        val colorBase = Misc.scaleAlpha(Misc.getBasePlayerColor(), 1f)
+        val colorDark = Misc.scaleAlpha(Misc.getDarkPlayerColor(), 1f)
+
+        val separator: LabelAPI = headerContainer.addSectionHeading("", Alignment.MID, 0f)
+        val separatorPosition = separator.position
+        separatorPosition.setSize(1f, 72f)
+        separatorPosition.rightOfMid(setTitleButtonAnchor, 10f)
+        separatorPosition.setYAlignOffset(-22f)
+
+        val iconBackwardButton = headerContainer.addButton("<", Buttons.ICON_BACKWARD, colorBase, colorDark,
+            Alignment.MID, CutStyle.TOP, 38f, 14f, 0f)
+        iconBackwardButton.position.rightOfMid(setTitleButtonAnchor, 21f)
+        iconBackwardButton.position.setYAlignOffset(7f)
+
+        renderDraftIcon()
+
+        val iconForwardButton = headerContainer.addButton(">", Buttons.ICON_FORWARD, colorBase, colorDark,
+            Alignment.MID, CutStyle.BOTTOM, 38f, 14f, 0f)
+        iconForwardButton.position.rightOfMid(setTitleButtonAnchor, 21f)
+        iconForwardButton.position.setYAlignOffset(-51f)
     }
 
     private fun addHeaderImage(headerContainer: TooltipMakerAPI): UIComponentAPI {
@@ -154,9 +233,6 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
         image.position.inTL(0f, 0f)
 
         val tooltip: BaseTooltipCreator = object: BaseTooltipCreator() {
-            override fun isTooltipExpandable(tooltipParam: Any?): Boolean {
-                return false
-            }
             override fun getTooltipWidth(tooltipParam: Any?): Float {
                 return 300f
             }

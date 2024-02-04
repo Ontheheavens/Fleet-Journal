@@ -40,6 +40,8 @@ class EntryWriter: BaseIntelPlugin() {
 
     var customTitleSet: Boolean = false
 
+    var selectedIconIndex: Int = 0
+
     var tagsState: HashMap<WriterPanelAssembly.EntityDisplayTags, Boolean> = hashMapOf(
         Pair(WriterPanelAssembly.EntityDisplayTags.PLANETS, true),
         Pair(WriterPanelAssembly.EntityDisplayTags.SALVAGE, true),
@@ -112,6 +114,8 @@ class EntryWriter: BaseIntelPlugin() {
             contents.add(paragraph.content)
         }
         val newEntry = JournalEntry(Common.findTargetEntity(this), title, brief, contents)
+        val iconID = assembly.icons[this.selectedIconIndex]
+        newEntry.icon = iconID
         Global.getSector().intelManager.addIntel(newEntry)
         this.draftParagraphs.clear()
         this.selectedParagraphIndex = 0
@@ -131,6 +135,10 @@ class EntryWriter: BaseIntelPlugin() {
 
         this.draftParagraphs.clear()
         this.selectedParagraphIndex = 0
+
+        val entryIcon = entry.icon
+
+        this.selectedIconIndex = assembly.icons.entries.find {it.value == entryIcon}?.key?:0
 
         for (paragraph in entry.contents) {
             addParagraph(paragraph)

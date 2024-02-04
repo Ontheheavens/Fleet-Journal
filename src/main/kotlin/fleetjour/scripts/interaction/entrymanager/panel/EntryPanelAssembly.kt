@@ -5,6 +5,8 @@ import com.fs.starfarer.api.impl.campaign.ids.Tags
 import com.fs.starfarer.api.ui.*
 import com.fs.starfarer.api.util.Misc
 import fleetjour.scripts.EntryWriter
+import fleetjour.scripts.interaction.shared.ButtonListener
+import fleetjour.scripts.interaction.shared.InteractiveButton
 
 /**
  * @author Ontheheavens
@@ -65,7 +67,7 @@ object EntryPanelAssembly {
         headerInstance = header
         val footer = Footer.create(panel)
         val contentHeightOffset = header!!.position.height + footer!!.position.height
-        val contentHeight = PanelConstants.PANEL_HEIGHT - ((PanelConstants.PANEL_CONTENT_OFFSET * 2)
+        val contentHeight = EntryManagerConstants.PANEL_HEIGHT - ((EntryManagerConstants.PANEL_CONTENT_OFFSET * 2)
                 + contentHeightOffset + 23f)
         val entriesSection = EntriesSection.create(panel, contentHeight)
         val sortingSection = createSortingPanel(panel, contentHeight - 91f)
@@ -86,7 +88,7 @@ object EntryPanelAssembly {
     }
 
     private fun createSortingPanel(panel: CustomPanelAPI, height: Float): CustomPanelAPI {
-        val width = PanelConstants.RIGHTSIDE_BUTTONS_WIDTH + 6f
+        val width = EntryManagerConstants.RIGHTSIDE_BUTTONS_WIDTH + 6f
         val sortingPanel = panel.createCustomPanel(width, height, EntryPanelOverseer.plugin)
         val backgroundContainer = sortingPanel.createUIElement(width, height, false)
         backgroundContainer.setForceProcessInput(false)
@@ -107,7 +109,7 @@ object EntryPanelAssembly {
             )
             tagButton.isChecked = tag.value
             buttonsContainer.addSpacer(3f)
-            val buttonWrapper = object : InteractiveButton(tagButton, Type.TAG) {
+            val buttonWrapper = object : InteractiveButton(tagButton) {
                 var state: Boolean = tagButton.isChecked
                 override fun applyEffect() {
                     SORTING_TAGS[tag.key] = state
@@ -135,7 +137,7 @@ object EntryPanelAssembly {
         val boxColor = Misc.scaleColorOnly(baseBoxColor, 0.9f)
         sidebarBoxContainer.addAreaCheckbox("", null, Misc.getBasePlayerColor(), boxColor,
             Misc.getBasePlayerColor(), 186f, height, 0f)
-        val offsetX = PanelConstants.RIGHTSIDE_BUTTONS_WIDTH + 2f
+        val offsetX = EntryManagerConstants.RIGHTSIDE_BUTTONS_WIDTH + 2f
         sidebarBoxContainer.prev.position.setXAlignOffset(-offsetX)
         sidebarBoxContainer.prev.position.setYAlignOffset(-9f)
         sidebarFrame.addImageWithText(2f)
@@ -143,7 +145,7 @@ object EntryPanelAssembly {
     }
 
     private fun createControlSection(parentPanel: CustomPanelAPI): CustomPanelAPI {
-        val width = PanelConstants.RIGHTSIDE_BUTTONS_WIDTH + 6f
+        val width = EntryManagerConstants.RIGHTSIDE_BUTTONS_WIDTH + 6f
         val panel = parentPanel.createCustomPanel(width, 20f, EntryPanelOverseer.plugin)
         val buttonsContainer = panel.createUIElement(width - 8f, 20f, false)
         buttonsContainer.addSpacer(8f)
@@ -156,9 +158,9 @@ object EntryPanelAssembly {
             hideButtonText = "Show entry"
         }
         val hideButtonInstance = buttonsContainer.addButton(hideButtonText, null, colorBase, colorDark,
-            Alignment.MID, CutStyle.ALL, PanelConstants.RIGHTSIDE_BUTTONS_WIDTH + 6f, 25f, 2f)
+            Alignment.MID, CutStyle.ALL, EntryManagerConstants.RIGHTSIDE_BUTTONS_WIDTH + 6f, 25f, 2f)
         hideButtonInstance.isEnabled = false
-        val hideButtonWrapper = object : InteractiveButton(hideButtonInstance, Type.STANDARD) {
+        val hideButtonWrapper = object : InteractiveButton(hideButtonInstance) {
             override fun applyEffect() {
                 EntriesSection.changeEntryVisibility()
             }
@@ -166,14 +168,14 @@ object EntryPanelAssembly {
         ButtonListener.getIndex()?.add(hideButtonWrapper)
         buttonsContainer.addSpacer(8f)
         val deleteButtonInstance = buttonsContainer.addButton("Delete entry", null, colorBase, colorDark,
-            Alignment.MID, CutStyle.ALL, PanelConstants.RIGHTSIDE_BUTTONS_WIDTH + 6f, 25f, 2f)
+            Alignment.MID, CutStyle.ALL, EntryManagerConstants.RIGHTSIDE_BUTTONS_WIDTH + 6f, 25f, 2f)
         if (!EntriesSection.showedEntries.containsKey(EntriesSection.selectedEntry) ||
              EntriesSection.showedEntries.size == 0 ||
              EntriesSection.selectedEntry == null ||
              EntriesSection.selectedEntry is EntryWriter) {
             deleteButtonInstance.isEnabled = false
         }
-        val deleteButtonWrapper = object : InteractiveButton(deleteButtonInstance, Type.STANDARD) {
+        val deleteButtonWrapper = object : InteractiveButton(deleteButtonInstance) {
             override fun applyEffect() {
                 if (EntriesSection.selectedEntry == null) return
                 if (EntriesSection.selectedEntry is EntryWriter) return

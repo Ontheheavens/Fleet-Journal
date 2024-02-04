@@ -92,6 +92,7 @@ class JournalEntry(
             info.addSpacer(-10f)
         }
         addRewriteButton(info, width)
+        info.addSpacer(-15f)
         addDeleteButton(info, width)
     }
 

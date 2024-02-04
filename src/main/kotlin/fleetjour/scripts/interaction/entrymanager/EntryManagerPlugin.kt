@@ -4,6 +4,7 @@ import com.fs.starfarer.api.campaign.CustomVisualDialogDelegate.DialogCallbacks
 import com.fs.starfarer.api.campaign.InteractionDialogAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.IntelUIAPI
+import fleetjour.scripts.EntryWriter
 import fleetjour.scripts.interaction.entrymanager.panel.EntryPanelAssembly
 import fleetjour.scripts.interaction.entrymanager.panel.EntryPanelOverseer
 import fleetjour.scripts.interaction.shared.AbstractPanelPlugin
@@ -13,7 +14,7 @@ import fleetjour.scripts.interaction.shared.AbstractPanelPlugin
  * @since  16.02.2023
  */
 
-class EntryManagerPlugin(ui: IntelUIAPI) : AbstractPanelPlugin(ui) {
+class EntryManagerPlugin(ui: IntelUIAPI, private val journal: EntryWriter) : AbstractPanelPlugin(ui) {
 
     override fun assemblePanel(
         panel: CustomPanelAPI,
@@ -21,7 +22,7 @@ class EntryManagerPlugin(ui: IntelUIAPI) : AbstractPanelPlugin(ui) {
         dialog: InteractionDialogAPI,
         ui: IntelUIAPI
     ) {
-        EntryPanelOverseer.initialize(panel, callbacks, dialog, ui, this)
+        EntryPanelOverseer.initialize(panel, callbacks, dialog, ui, this, journal)
         EntryPanelAssembly.assemble(panel)
     }
 
