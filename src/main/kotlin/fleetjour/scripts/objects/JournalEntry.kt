@@ -19,11 +19,11 @@ import org.lwjgl.input.Keyboard
  * @since  14.02.2023
  */
 
-class JournalEntry(
+open class JournalEntry(
     entity: SectorEntityToken,
     val title: String,
     val brief: String,
-    val contents: ArrayList<String>
+    val contents: List<String>
 ) : FleetLogIntel() {
 
     private val target: SectorEntityToken = this.makeDoubleWithSameOrbit(entity)

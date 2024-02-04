@@ -16,6 +16,7 @@ import fleetjour.scripts.objects.DraftParagraph
 import fleetjour.scripts.objects.JournalEntry
 import fleetjour.scripts.panel.ButtonChecker
 import fleetjour.scripts.panel.Common
+import fleetjour.scripts.panel.Constants
 import fleetjour.scripts.panel.WriterPanelAssembly
 
 /**
@@ -114,7 +115,7 @@ class EntryWriter: BaseIntelPlugin() {
             contents.add(paragraph.content)
         }
         val newEntry = JournalEntry(Common.findTargetEntity(this), title, brief, contents)
-        val iconID = assembly.icons[this.selectedIconIndex]
+        val iconID = Constants.icons[this.selectedIconIndex]
         newEntry.icon = iconID
         Global.getSector().intelManager.addIntel(newEntry)
         this.draftParagraphs.clear()
@@ -138,7 +139,7 @@ class EntryWriter: BaseIntelPlugin() {
 
         val entryIcon = entry.icon
 
-        this.selectedIconIndex = assembly.icons.entries.find {it.value == entryIcon}?.key?:0
+        this.selectedIconIndex = Constants.icons.entries.find {it.value == entryIcon}?.key?:0
 
         for (paragraph in entry.contents) {
             addParagraph(paragraph)
@@ -185,6 +186,17 @@ class EntryWriter: BaseIntelPlugin() {
         return paragraph
     }
 
+    fun createCircumstanceStrings(entity: SectorEntityToken): ArrayList<String> {
+        val result = arrayListOf<String>()
+        result.add("Date: " + Global.getSector().clock.dateString)
+        result.add("Location: " + entity.containingLocation.name)
+        if (entity.faction != null && !entity.faction.isNeutralFaction) {
+            result.add("Faction: " + entity.faction.displayName)
+        }
+        return result
+
+    }
+
     fun writeQuickEntry(
         entity: SectorEntityToken,
         titlePrefix: String = "Notable "
@@ -192,12 +204,7 @@ class EntryWriter: BaseIntelPlugin() {
         val title = titlePrefix + Common.getTypeForIntelInfo(entity)
         val brief = "Name: " + entity.name
 
-        val contents = arrayListOf<String>()
-        contents.add("Date: " + Global.getSector().clock.dateString)
-        contents.add("Location: " + entity.containingLocation.name)
-        if (entity.faction != null && !entity.faction.isNeutralFaction) {
-            contents.add("Faction: " + entity.faction.displayName)
-        }
+        val contents = createCircumstanceStrings(entity)
 
         return JournalEntry(entity, title, brief, contents)
     }

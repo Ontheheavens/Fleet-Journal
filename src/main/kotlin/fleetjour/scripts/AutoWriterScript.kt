@@ -2,15 +2,17 @@ package fleetjour.scripts
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.CampaignTerrainAPI
+import com.fs.starfarer.api.campaign.PlanetAPI
 import com.fs.starfarer.api.campaign.SectorEntityToken
-import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
 import com.fs.starfarer.api.campaign.listeners.DiscoverEntityListener
+import com.fs.starfarer.api.campaign.listeners.SurveyPlanetListener
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.impl.campaign.DerelictShipEntityPlugin
 import com.fs.starfarer.api.impl.campaign.HiddenCacheEntityPlugin
 import com.fs.starfarer.api.impl.campaign.SupplyCacheEntityPlugin
 import com.fs.starfarer.api.impl.campaign.ids.Tags
 import com.fs.starfarer.api.impl.campaign.terrain.DebrisFieldTerrainPlugin
+import com.fs.starfarer.api.util.Misc
 import fleetjour.scripts.objects.JournalEntry
 import fleetjour.scripts.panel.Common
 import fleetjour.settings.SettingsHolder
@@ -19,7 +21,7 @@ import fleetjour.settings.SettingsHolder
  * @author Ontheheavens
  * @since 03.02.2024
  */
-class AutoWriterScript : DiscoverEntityListener {
+class AutoWriterScript : DiscoverEntityListener, SurveyPlanetListener {
 
     override fun reportEntityDiscovered(entity: SectorEntityToken?) {
         if (entity == null || !SettingsHolder.AUTO_LOGGING_ENABLED) {
@@ -28,22 +30,8 @@ class AutoWriterScript : DiscoverEntityListener {
         if (!checkLoggingValidity(entity)) {
             return
         }
-        val sector = Global.getSector()
-
-        val intelManager = sector.intelManager
-        var writer: IntelInfoPlugin? = intelManager.getFirstIntel(EntryWriter::class.java) ?: return
-
-        val journalEntries = intelManager.getIntel(JournalEntry::class.java)
-        if (journalEntries != null) {
-            for (journalEntry in journalEntries) {
-                val target = (journalEntry as JournalEntry).targetEntityToken
-                if (target == entity) {
-                    return
-                }
-            }
-        }
-        writer = writer as EntryWriter
-        val autoEntry = writer.writeQuickEntry(entity, "Observed ")
+        val writer: EntryWriter = Common.getWriter() ?: return
+        val autoEntry = writer.writeQuickEntry(entity, Common.AUTO_LOGGING_PREFIX)
         autoEntry.icon = getIconForEntity(entity)
         Global.getSector().intelManager.addIntel(autoEntry, true)
     }
@@ -95,6 +83,29 @@ class AutoWriterScript : DiscoverEntityListener {
         return Global.getSettings().getSpriteName("fleetjour_intel", iconID)
     }
 
+    override fun reportPlayerSurveyedPlanet(planet: PlanetAPI?) {
+        if (planet == null || planet.market == null || !SettingsHolder.AUTO_LOGGING_ENABLED) {
+            return
+        }
+        if (Misc.hasUnexploredRuins(planet.market)) {
+
+            val writer: EntryWriter = Common.getWriter() ?: return
+            val title = Common.AUTO_LOGGING_PREFIX + "Ruins"
+            val brief = "Planet: " + planet.name
+
+            val contents = writer.createCircumstanceStrings(planet)
+            contents.add("Ruins: " + Common.getRuinsType(planet.market))
+
+            val ruinsEntry = object: JournalEntry(planet, title, brief, contents) {
+                override fun shouldRemoveIntel(): Boolean {
+                    return super.shouldRemoveIntel() || !Misc.hasUnexploredRuins(planet.market)
+                }
+            }
+
+            ruinsEntry.icon = Global.getSettings().getSpriteName("fleetjour_intel", "entry_ruins")
+            Global.getSector().intelManager.addIntel(ruinsEntry, true)
+        }
+    }
 
 
 }

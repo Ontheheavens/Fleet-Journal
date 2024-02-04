@@ -13,8 +13,8 @@
 			"entry_station": "graphics/fleetjour/icons/intel/entry_station.png",
 			"entry_stellar_body": "graphics/fleetjour/icons/intel/entry_stellar_body.png",
 			"entry_probe": "graphics/fleetjour/icons/intel/entry_probe.png",
-			"entry_cryosleeper": "graphics/fleetjour/icons/intel/entry_cryosleeper.png"
-
+			"entry_cryosleeper": "graphics/fleetjour/icons/intel/entry_cryosleeper.png",
+			"entry_ruins": "graphics/fleetjour/icons/intel/entry_ruins.png"
 		}
 
 	}

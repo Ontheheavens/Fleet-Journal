@@ -2,11 +2,14 @@ package fleetjour.scripts.panel
 
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.campaign.*
+import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
+import com.fs.starfarer.api.campaign.econ.MarketAPI
 import com.fs.starfarer.api.combat.ShipVariantAPI
 import com.fs.starfarer.api.impl.campaign.DerelictShipEntityPlugin
 import com.fs.starfarer.api.impl.campaign.FusionLampEntityPlugin
 import com.fs.starfarer.api.impl.campaign.HiddenCacheEntityPlugin
 import com.fs.starfarer.api.impl.campaign.SupplyCacheEntityPlugin
+import com.fs.starfarer.api.impl.campaign.ids.Conditions
 import com.fs.starfarer.api.impl.campaign.ids.Entities
 import com.fs.starfarer.api.impl.campaign.ids.Tags
 import com.fs.starfarer.api.impl.campaign.terrain.DebrisFieldTerrainPlugin
@@ -24,6 +27,8 @@ import fleetjour.scripts.EntryWriter
  */
 
 object Common {
+
+    const val AUTO_LOGGING_PREFIX = "Observed "
 
     fun selectDefaultTargetEntity(intel: EntryWriter): String {
         val targetLocation = this.findTargetLocation(intel)
@@ -263,6 +268,33 @@ object Common {
             entity.hasTag(Tags.SALVAGEABLE) -> return "Salvage"
         }
         return "Entity"
+    }
+
+    fun getWriter(): EntryWriter? {
+        val sector = Global.getSector()
+
+        val intelManager = sector.intelManager
+        var writer: IntelInfoPlugin? = intelManager.getFirstIntel(EntryWriter::class.java) ?: return null
+        writer = writer as EntryWriter
+        return writer
+    }
+
+    fun getRuinsType(market: MarketAPI): String {
+        when {
+            market.hasCondition(Conditions.RUINS_SCATTERED) -> {
+                return "Scattered"
+            }
+            market.hasCondition(Conditions.RUINS_EXTENSIVE) -> {
+                return "Extensive"
+            }
+            market.hasCondition(Conditions.RUINS_WIDESPREAD) -> {
+                return "Widespread"
+            }
+            market.hasCondition(Conditions.RUINS_VAST) -> {
+                return "Vast"
+            }
+        }
+        return "None"
     }
 
     fun entityIsProbe(entity: SectorEntityToken): Boolean {

@@ -86,10 +86,8 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
     lateinit var thirdTagSorter: ButtonAPI
     lateinit var fourthTagSorter: ButtonAPI
 
-    var icons: Map<Int, String> = createIconRepository()
-
     fun cycleIconsForward() {
-        if (parent.selectedIconIndex + 1 == icons.size) {
+        if (parent.selectedIconIndex + 1 == Constants.icons.size) {
             parent.selectedIconIndex = 0
         } else {
             parent.selectedIconIndex++
@@ -98,27 +96,10 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
 
     fun cycleIconsBackward() {
         if (parent.selectedIconIndex == 0) {
-            parent.selectedIconIndex = icons.size - 1
+            parent.selectedIconIndex = Constants.icons.size - 1
         } else {
             parent.selectedIconIndex--
         }
-    }
-
-    private fun createIconRepository(): Map<Int, String> {
-        val settings = Global.getSettings()
-        val category = "fleetjour_intel"
-        return hashMapOf(
-            Pair(0, settings.getSpriteName("intel", "fleet_log")),
-            Pair(1, settings.getSpriteName(category, "entry_cache")),
-            Pair(2, settings.getSpriteName(category, "entry_debris")),
-            Pair(3, settings.getSpriteName(category, "entry_derelict")),
-            Pair(4, settings.getSpriteName(category, "entry_entity")),
-            Pair(5, settings.getSpriteName(category, "entry_exclamation")),
-            Pair(6, settings.getSpriteName(category, "entry_station")),
-            Pair(7, settings.getSpriteName(category, "entry_stellar_body")),
-            Pair(8, settings.getSpriteName(category, "entry_probe")),
-            Pair(9, settings.getSpriteName(category, "entry_cryosleeper"))
-        )
     }
 
     fun assemblePanel() {
@@ -194,9 +175,25 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
         if (this::iconComponent.isInitialized) {
             headerContainer.removeComponent(iconComponent)
         }
-        val iconID = icons[parent.selectedIconIndex]
+        val iconID = Constants.icons[parent.selectedIconIndex]
         headerContainer.addImage(iconID, 0f)
         iconComponent = headerContainer.prev
+
+        val tooltip: BaseTooltipCreator = object: BaseTooltipCreator() {
+            override fun getTooltipWidth(tooltipParam: Any?): Float {
+                return 300f
+            }
+            override fun createTooltip(tooltip: TooltipMakerAPI?, expanded: Boolean, tooltipParam: Any?) {
+                tooltip?: return
+                tooltip.addSectionHeading("Icon Info", Alignment.MID, 1f)
+                tooltip.beginGrid(300f, 1)
+                var row = 0
+                tooltip.addToGrid(0, 0, "Selected icon:", "#" + parent.selectedIconIndex, Misc.getHighlightColor())
+                tooltip.addToGrid(0, 1, "Total count:", Constants.icons.size.toString(), Misc.getHighlightColor())
+                tooltip.addGrid(6f)
+            }
+        }
+        headerContainer.addTooltipTo(tooltip, iconComponent, TooltipMakerAPI.TooltipLocation.BELOW)
 
         val imagePosition = iconComponent.position
         imagePosition.rightOfMid(titleFieldInstance, 70f)

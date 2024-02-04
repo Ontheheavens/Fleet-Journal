@@ -1,5 +1,7 @@
 package fleetjour.scripts.panel
 
+import com.fs.starfarer.api.Global
+
 /**
  * @author Ontheheavens
  * @since  10.02.2023
@@ -24,5 +26,25 @@ object Constants {
     const val DRAFTPANEL_WIDTH_OFFSET = SELECTOR_WIDTH + (RIGHTSIDE_OFFSET + 4f)
 
     const val DISTANCE_THRESHOLD_FOR_DISPLAY = 2f
+
+    val icons: Map<Int, String> = createIconRepository()
+
+    private fun createIconRepository(): Map<Int, String> {
+        val settings = Global.getSettings()
+        val category = "fleetjour_intel"
+        return hashMapOf(
+            Pair(0, settings.getSpriteName("intel", "fleet_log")),
+            Pair(1, settings.getSpriteName(category, "entry_cache")),
+            Pair(2, settings.getSpriteName(category, "entry_debris")),
+            Pair(3, settings.getSpriteName(category, "entry_derelict")),
+            Pair(4, settings.getSpriteName(category, "entry_entity")),
+            Pair(5, settings.getSpriteName(category, "entry_exclamation")),
+            Pair(6, settings.getSpriteName(category, "entry_station")),
+            Pair(7, settings.getSpriteName(category, "entry_stellar_body")),
+            Pair(8, settings.getSpriteName(category, "entry_probe")),
+            Pair(9, settings.getSpriteName(category, "entry_cryosleeper")),
+            Pair(10, settings.getSpriteName(category, "entry_ruins"))
+        )
+    }
 
 }
