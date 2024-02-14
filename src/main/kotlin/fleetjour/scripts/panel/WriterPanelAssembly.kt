@@ -186,9 +186,11 @@ class WriterPanelAssembly(private val intel: EntryWriter, panel: CustomPanelAPI,
             override fun createTooltip(tooltip: TooltipMakerAPI?, expanded: Boolean, tooltipParam: Any?) {
                 tooltip?: return
                 tooltip.addSectionHeading("Icon Info", Alignment.MID, 1f)
-                tooltip.beginGrid(300f, 1)
-                tooltip.addToGrid(0, 0, "Selected icon:", "#" + parent.selectedIconIndex, Misc.getHighlightColor())
-                tooltip.addToGrid(0, 1, "Total count:", Constants.icons.size.toString(), Misc.getHighlightColor())
+                tooltip.beginGrid(150f, 1)
+                tooltip.addToGrid(0, 0, "Selected icon:",
+                    "#" + (parent.selectedIconIndex + 1), Misc.getHighlightColor())
+                tooltip.addToGrid(0, 1, "Total count:",
+                    Constants.icons.size.toString(), Misc.getHighlightColor())
                 tooltip.addGrid(6f)
             }
         }

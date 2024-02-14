@@ -136,6 +136,7 @@ open class JournalEntry(
     }
 
     override fun getArrowData(map: SectorMapAPI?): List<ArrowData>? {
+        if (!this.isImportant) return null
         val playerFleet = Global.getSector().playerFleet ?: return null
         val result: MutableList<ArrowData> = ArrayList()
         if (playerFleet.containingLocation === target.containingLocation && playerFleet.containingLocation != null &&
