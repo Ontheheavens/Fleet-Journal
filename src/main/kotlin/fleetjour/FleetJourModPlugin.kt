@@ -35,7 +35,7 @@ class FleetJourModPlugin : BaseModPlugin() {
             val listener = QuickWriterListener()
             sector.addScript(listener)
         }
-        ensureAutoWriterScriptPresence()
+        this.ensureAutoWriterScriptPresence()
     }
 
     private fun ensureAutoWriterScriptPresence() {

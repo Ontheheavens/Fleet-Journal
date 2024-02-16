@@ -41,7 +41,7 @@ class AutoWriterScript : DiscoverEntityListener, SurveyPlanetListener {
     }
 
     private fun checkDebrisValidity(entity: SectorEntityToken): Boolean {
-        if (entity !is CampaignTerrainAPI || (entity as CampaignTerrainAPI).plugin !is DebrisFieldTerrainPlugin) {
+        if ((entity !is CampaignTerrainAPI) || (entity.plugin !is DebrisFieldTerrainPlugin)) {
             return true
         }
         return SettingsHolder.DEBRIS_FIELD_LOGGING_ENABLED
@@ -52,7 +52,7 @@ class AutoWriterScript : DiscoverEntityListener, SurveyPlanetListener {
             return true
         }
         val plugin = entity.customPlugin as DerelictShipEntityPlugin
-        val variant = Common.getVariantOfDerelict(plugin)
+        val variant = Common.getVariantOfDerelict(plugin) ?: return true
         val size = variant.hullSize
         return when (size) {
             ShipAPI.HullSize.FRIGATE -> SettingsHolder.FRIGATE_DERELICT_LOGGING_ENABLED
@@ -73,7 +73,7 @@ class AutoWriterScript : DiscoverEntityListener, SurveyPlanetListener {
             entity.customPlugin is SupplyCacheEntityPlugin || entity.customPlugin is HiddenCacheEntityPlugin ->
                 iconID = "entry_cache"
             entity.customPlugin is DerelictShipEntityPlugin -> iconID = "entry_derelict"
-            entity is CampaignTerrainAPI && (entity as CampaignTerrainAPI).plugin is DebrisFieldTerrainPlugin ->
+            (entity is CampaignTerrainAPI) && (entity.plugin is DebrisFieldTerrainPlugin) ->
                 iconID = "entry_debris"
             entity.hasTag(Tags.STAR) || entity.isSystemCenter || entity.isStar -> iconID = "entry_stellar_body"
             entity.hasTag(Tags.GAS_GIANT) -> iconID = "entry_stellar_body"

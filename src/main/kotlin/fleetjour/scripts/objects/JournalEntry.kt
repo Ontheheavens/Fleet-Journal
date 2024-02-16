@@ -83,7 +83,7 @@ open class JournalEntry(
     }
 
     override fun createSmallDescription(info: TooltipMakerAPI, width: Float, height: Float) {
-        if (contents.size > 0) {
+        if (contents.isNotEmpty()) {
             info.addSpacer(10f)
             for (paragraph in contents) {
                 info.addPara(paragraph, 2f)

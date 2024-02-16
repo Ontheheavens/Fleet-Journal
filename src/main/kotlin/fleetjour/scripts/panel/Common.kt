@@ -54,7 +54,7 @@ object Common {
         return filtered[0]
     }
 
-    fun getVariantOfDerelict(plugin: DerelictShipEntityPlugin): ShipVariantAPI {
+    fun getVariantOfDerelict(plugin: DerelictShipEntityPlugin): ShipVariantAPI? {
         var shipVariant = Global.getSettings().getVariant(plugin.data.ship.variantId)
         shipVariant?: let {
             shipVariant = plugin.data.ship.variant
@@ -228,8 +228,8 @@ object Common {
             entityIsCryosleeper(entity) -> return "Cryosleeper"
             entity.hasTag(Tags.CORONAL_TAP) -> return "Coronal Tap"
             entity.hasTag(Tags.WARNING_BEACON) -> return "Warning Beacon"
-            entity is CampaignTerrainAPI &&
-                    (entity as CampaignTerrainAPI).plugin is DebrisFieldTerrainPlugin -> return "Debris Field"
+            (entity is CampaignTerrainAPI) &&
+                    (entity.plugin is DebrisFieldTerrainPlugin) -> return "Debris Field"
             entity.customPlugin is DerelictShipEntityPlugin -> return "Derelict"
             entity.customPlugin is FusionLampEntityPlugin -> return "Fusion Lamp"
             entity.customPlugin is SupplyCacheEntityPlugin || entity.customPlugin is HiddenCacheEntityPlugin ->
@@ -257,7 +257,7 @@ object Common {
             entity.customPlugin is DerelictShipEntityPlugin -> return "Derelict"
             entity.customPlugin is SupplyCacheEntityPlugin || entity.customPlugin is HiddenCacheEntityPlugin ->
                 return "Cache"
-            entity is CampaignTerrainAPI && (entity as CampaignTerrainAPI).plugin is DebrisFieldTerrainPlugin -> return "Debris"
+            (entity is CampaignTerrainAPI) && (entity.plugin is DebrisFieldTerrainPlugin) -> return "Debris"
             entity.hasTag(Tags.STAR) || entity.isSystemCenter || entity.isStar -> return "Star System"
             entity.hasTag(Tags.GAS_GIANT) -> return "Gas Giant"
             entity.hasTag(Tags.PLANET) -> return "Planet"
