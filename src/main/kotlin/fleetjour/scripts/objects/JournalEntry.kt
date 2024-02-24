@@ -1,6 +1,7 @@
 package fleetjour.scripts.objects
 
 import com.fs.starfarer.api.Global
+import com.fs.starfarer.api.campaign.CampaignFleetAPI
 import com.fs.starfarer.api.campaign.SectorEntityToken
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin
 import com.fs.starfarer.api.campaign.comm.IntelInfoPlugin.ArrowData
@@ -52,7 +53,7 @@ open class JournalEntry(
 
     private fun makeDoubleWithSameOrbit(entity: SectorEntityToken): SectorEntityToken {
         val copy = entity.containingLocation.createToken(entity.location.x, entity.location.y)
-        if (entity.orbit != null) {
+        if (entity.orbit != null && entity !is CampaignFleetAPI) {
             copy.orbit = entity.orbit.makeCopy()
         }
         copy.containingLocation.addEntity(copy)
